@@ -5,7 +5,7 @@ index 10c307b3b9..a52bf71c4d 100644
 @@ -370,7 +370,7 @@ else()
          )
          set_source_files_properties(${MLAS_SRC_DIR}/sqnbitgemm_kernel_neon_int8.cpp
-                                     PROPERTIES COMPILE_FLAGS " -march=armv8.2-a+dotprod")
+                                     PROPERTIES COMPILE_FLAGS " -march=armv8.6-a+dotprod")
 -        if (NOT APPLE)
 +        if (NOT APPLE AND NOT onnxruntime_USE_VSINPU)
            set(mlas_platform_srcs

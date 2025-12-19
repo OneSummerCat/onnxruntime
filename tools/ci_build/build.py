@@ -836,6 +836,27 @@ def generate_build_tree(
         if args.android_cpp_shared:
             cmake_args += ["-DANDROID_STL=c++_shared"]
 
+    # OpenHarmony
+    if args.ohos:
+        cmake_args += [
+            f"-DOHOS_ARCH={args.ohos_abi}",
+            "-DCMAKE_TOOLCHAIN_FILE=" + args.ohos_toolchain_path,
+            "-DCMAKE_SKIP_RPATH=ON",
+            "-DCMAKE_SKIP_INSTALL_RPATH=ON",
+        ]
+        if args.ohos_abi == "armeabi-v7a" :
+            cmake_args += [
+                "-DCMAKE_ASM_FLAGS=-mfloat-abi=softfp",
+                "-DCMAKE_CXX_FLAGS=-mfloat-abi=softfp",
+                "-DCMAKE_C_FLAGS=-mfloat-abi=softfp",
+            ]
+        elif args.ohos_abi == "arm64-v8a" :
+            cmake_args += [
+                "-DCMAKE_ASM_FLAGS=-march=armv8.6-a",
+                "-DCMAKE_CXX_FLAGS=-march=armv8.6-a",
+                "-DCMAKE_C_FLAGS=-march=armv8.6-a",
+            ]
+
     if is_macOS() and not args.android:
         add_default_definition(cmake_extra_defines, "CMAKE_OSX_ARCHITECTURES", args.osx_arch)
         # Code sign the binaries, if the code signing development identity and/or team id are provided

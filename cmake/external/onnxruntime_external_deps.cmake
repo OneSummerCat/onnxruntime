@@ -209,7 +209,7 @@ set(protobuf_BUILD_TESTS OFF CACHE BOOL "Build protobuf tests" FORCE)
 #set(protobuf_INSTALL OFF CACHE BOOL "Install protobuf binaries and files" FORCE)
 set(protobuf_USE_EXTERNAL_GTEST ON CACHE BOOL "" FORCE)
 
-if (ANDROID)
+if (ANDROID OR OHOS)
   set(protobuf_WITH_ZLIB OFF CACHE BOOL "Build protobuf with zlib support" FORCE)
 endif()
 
@@ -380,6 +380,17 @@ if (CPUINFO_SUPPORTED)
         URL_HASH SHA1=${DEP_SHA1_pytorch_cpuinfo}
         EXCLUDE_FROM_ALL
         PATCH_COMMAND ${Patch_EXECUTABLE} -p1 < ${PROJECT_SOURCE_DIR}/patches/cpuinfo/9bb12d342fd9479679d505d93a478a6f9cd50a47.patch
+        FIND_PACKAGE_ARGS NAMES cpuinfo
+      )
+  elseif (CMAKE_SYSTEM_NAME STREQUAL "OHOS" AND
+         (onnxruntime_target_platform STREQUAL "armv7-a" OR onnxruntime_target_platform STREQUAL "aarch64"))
+      message(STATUS "Applying a patch for OHOS in cpuinfo")
+      onnxruntime_fetchcontent_declare(
+        pytorch_cpuinfo
+        URL ${DEP_URL_pytorch_cpuinfo}
+        URL_HASH SHA1=${DEP_SHA1_pytorch_cpuinfo}
+        EXCLUDE_FROM_ALL
+        PATCH_COMMAND ${Patch_EXECUTABLE} -p1 < ${PROJECT_SOURCE_DIR}/patches/cpuinfo/ohos_cpuinfo.patch
         FIND_PACKAGE_ARGS NAMES cpuinfo
       )
   else()

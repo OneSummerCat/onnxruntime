@@ -285,6 +285,18 @@ def add_android_args(parser: argparse.ArgumentParser) -> None:
         "--android_run_emulator", action="store_true", help="Start an Android emulator if needed for tests."
     )
 
+def add_ohos_args(parser: argparse.ArgumentParser) -> None:
+    "Adds arguments for Android platform builds."
+    parser.add_argument("--ohos", action="store_true", help="Build for Openharmony")
+    parser.add_argument("--ohos_abi",
+        default="arm64-v8a",
+        choices=["armeabi-v7a", "arm64-v8a"],
+        help="Target Open Harmony ABI",
+    )
+    parser.add_argument("--ohos_sdk", type=str, default=os.environ.get("OHOS_SDK", ""), help="Path to Open Harmony SDK")
+    parser.add_argument("--ohos_cmake_path", type=str, default="", help="Path to OpenHarmony cross-compiling cmake")
+    parser.add_argument("--ohos_ctest_path", type=str, default="", help="Path to OpenHarmony cross-compiling ctest")
+    parser.add_argument("--ohos_toolchain_path", type=str, default="", help="Path to OpenHarmony cmake toolchain file")
 
 def add_apple_args(parser: argparse.ArgumentParser) -> None:
     """Adds arguments for Apple platform builds (iOS, macOS, visionOS, tvOS)."""
@@ -835,6 +847,7 @@ def parse_arguments() -> argparse.Namespace:
     add_documentation_args(parser)
     add_cross_compile_args(parser)  # Non-Windows cross-compile args
     add_android_args(parser)
+    add_ohos_args(parser)
     add_webassembly_args(parser)
     add_dependency_args(parser)
     add_extension_args(parser)
@@ -872,6 +885,28 @@ def parse_arguments() -> argparse.Namespace:
         args.android_sdk_path = os.path.normpath(args.android_sdk_path)
     if args.android_ndk_path:
         args.android_ndk_path = os.path.normpath(args.android_ndk_path)
+
+    # Cross-compilation path configuration for the OpenHarmony platform
+    if args.ohos:
+        if args.ohos_sdk == "" :
+            parser.error("Cross-compiling for the OpenHarmony platform requires both ohos and ohos_sdk to be set.")
+        else:
+            print(args.ohos_sdk)
+            args.ohos_sdk = os.path.normpath(args.ohos_sdk)
+            print(args.ohos_sdk)
+            if args.ohos_cmake_path == "" :
+                args.ohos_cmake_path = os.path.join(args.ohos_sdk, "native/build-tools/cmake/bin/cmake")
+            if args.ohos_ctest_path == "" :
+                args.ohos_ctest_path = os.path.join(args.ohos_sdk, "native/build-tools/cmake/bin/ctest")
+            if args.ohos_toolchain_path == "" :
+                args.ohos_toolchain_path = os.path.join(args.ohos_sdk, "native/build/cmake/ohos.toolchain.cmake")
+            print(args.ohos_cmake_path)
+            print(args.ohos_ctest_path)
+            print(args.ohos_toolchain_path)
+            # Typically, cross-compilation produces libraries for multiple target platforms.
+            args.build_dir = os.path.join(args.build_dir, args.ohos_abi)
+            args.cmake_path = args.ohos_cmake_path
+            args.ctest_path = args.ohos_ctest_path
 
     # Handle WASM exception logic
     if args.enable_wasm_api_exception_catching:

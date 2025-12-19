@@ -219,6 +219,13 @@ elseif(NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
     elseif (CMAKE_ANDROID_ARCH_ABI STREQUAL "x86")
       set(X86 TRUE)
     endif()
+  elseif (CMAKE_SYSTEM_NAME STREQUAL "OHOS")
+    message(STATUS "run onnxruntime_target_platform ${onnxruntime_target_platform}")
+    if (onnxruntime_target_platform STREQUAL "aarch64")
+      set(ARM64 TRUE)
+    elseif (onnxruntime_target_platform STREQUAL "armv7-a")
+      set(ARM TRUE)
+    endif()
   else()
     execute_process(
       COMMAND ${CMAKE_C_COMPILER} -dumpmachine

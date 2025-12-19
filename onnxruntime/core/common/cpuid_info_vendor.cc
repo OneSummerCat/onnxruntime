@@ -198,7 +198,7 @@ constexpr std::array kCpuVendorInfos{
     CpuVendorInfo{cpuinfo_vendor_nvidia, "Nvidia", 0x10DE},
     CpuVendorInfo{cpuinfo_vendor_apple, "Apple", 0x106B},
     CpuVendorInfo{cpuinfo_vendor_arm, "ARM", 0x13B5},
-
+    CpuVendorInfo{cpuinfo_vendor_huawei, "Huawei", 0x48},
     // TODO add more as needed
 };
 
