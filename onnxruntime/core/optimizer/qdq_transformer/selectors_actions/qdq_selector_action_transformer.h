@@ -14,7 +14,7 @@
 namespace onnxruntime {
 
 inline constexpr bool QDQIsInt8Allowed() {
-#if !defined(MLAS_TARGET_ARM_ANY)
+#if !defined(MLAS_TARGET_ARM_ANY) || (defined(__OHOS__) && defined(__arm__))
   return false;
 #else
   return true;
