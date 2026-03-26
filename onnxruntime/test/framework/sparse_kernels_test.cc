@@ -1073,7 +1073,7 @@ static void RawSparseDataChecker(gsl::span<const T> expected_values,
                                  const SparseTensorProto& actual) {
   const int64_t actual_size = ActualSize(actual);
 #if defined(__OHOS__) && defined(__arm__)
-  // ºèÃÉarmv7a: ±ØĞë¿½±´µ½ÄÚ´æ¶ÔÆë
+  // é¸¿è’™armv7a: å¿…é¡»æ‹·è´,ä¿è¯å†…å­˜å¯¹é½
   auto raw_data = std::make_unique<T[]>(actual_size);
   memcpy(raw_data.get(), actual.values().raw_data().data(), sizeof(T) * actual_size);
   auto actual_span = gsl::make_span<const T>(raw_data.get(), actual_size);
