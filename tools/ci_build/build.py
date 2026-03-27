@@ -856,6 +856,8 @@ def generate_build_tree(
                 "-DCMAKE_CXX_FLAGS=-march=armv8.6-a",
                 "-DCMAKE_C_FLAGS=-march=armv8.6-a",
             ]
+        elif args.ohos_abi == "x86_64" :
+            cmake_args += []
 
     if is_macOS() and not args.android:
         add_default_definition(cmake_extra_defines, "CMAKE_OSX_ARCHITECTURES", args.osx_arch)

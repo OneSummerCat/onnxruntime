@@ -225,6 +225,8 @@ elseif(NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
       set(ARM64 TRUE)
     elseif (onnxruntime_target_platform STREQUAL "armv7-a")
       set(ARM TRUE)
+    elseif (onnxruntime_target_platform STREQUAL "x86_64")
+      set(X86_64 TRUE)
     endif()
   else()
     execute_process(

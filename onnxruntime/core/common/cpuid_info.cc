@@ -159,7 +159,7 @@ void CPUIDInfo::X86Init() {
         CheckIntelResult check_intel = CheckIntel();
         if (check_intel.is_intel) {
 #ifdef __linux__
-#if !defined(__ANDROID__)
+#if !defined(__ANDROID__) && !defined(__OHOS__)
           has_tpause_ = __builtin_cpu_supports("waitpkg") != 0;
 #endif
 #else

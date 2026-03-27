@@ -34,7 +34,7 @@ void SpinPause() {
   if (has_tpause) {
 #if defined(_WIN32)
     _tpause(0x0, __rdtsc() + tpause_spin_delay_cycles);
-#elif defined(__linux__)
+#elif defined(__linux__) && !defined(__OHOS__)
     __builtin_ia32_tpause(0x0, __rdtsc() + tpause_spin_delay_cycles);
 #else
     _mm_pause();

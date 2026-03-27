@@ -10,6 +10,15 @@ diff --git a/CMakeLists.txt b/CMakeLists.txt
    IF(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.14" AND NOT IS_APPLE_OS)
      MESSAGE(WARNING
        "Target operating system \"${CMAKE_SYSTEM_NAME}\" is not supported in cpuinfo. "
+@@ -173,7 +173,7 @@
+       src/x86/cache/init.c
+       src/x86/cache/descriptor.c
+       src/x86/cache/deterministic.c)
+-    IF(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Android")
++    IF(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Android" OR CMAKE_SYSTEM_NAME STREQUAL "OHOS")
+       LIST(APPEND CPUINFO_SRCS
+         src/x86/linux/init.c
+         src/x86/linux/cpuinfo.c)
 @@ -192,7 +192,7 @@
      LIST(APPEND CPUINFO_SRCS
        src/arm/uarch.c

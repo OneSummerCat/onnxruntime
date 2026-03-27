@@ -383,7 +383,10 @@ if (CPUINFO_SUPPORTED)
         FIND_PACKAGE_ARGS NAMES cpuinfo
       )
   elseif (CMAKE_SYSTEM_NAME STREQUAL "OHOS" AND
-         (onnxruntime_target_platform STREQUAL "armv7-a" OR onnxruntime_target_platform STREQUAL "aarch64"))
+         (onnxruntime_target_platform STREQUAL "armv7-a" OR
+          onnxruntime_target_platform STREQUAL "aarch64" OR
+          onnxruntime_target_platform STREQUAL "x86_64"
+          ))
       message(STATUS "Applying a patch for OHOS in cpuinfo")
       onnxruntime_fetchcontent_declare(
         pytorch_cpuinfo

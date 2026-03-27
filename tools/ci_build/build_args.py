@@ -290,7 +290,7 @@ def add_ohos_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--ohos", action="store_true", help="Build for Openharmony")
     parser.add_argument("--ohos_abi",
         default="arm64-v8a",
-        choices=["armeabi-v7a", "arm64-v8a"],
+        choices=["armeabi-v7a", "arm64-v8a", "x86_64"],
         help="Target Open Harmony ABI",
     )
     parser.add_argument("--ohos_sdk", type=str, default=os.environ.get("OHOS_SDK", ""), help="Path to Open Harmony SDK")
