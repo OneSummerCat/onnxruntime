@@ -883,9 +883,18 @@ MlasGemmQuantGetDispatch(
         GemmQuantDispatch = GetMlasPlatform().GemmU8U8Dispatch;
     }
 #elif defined(MLAS_TARGET_ARM64EC) || (defined(MLAS_TARGET_ARM) && !defined(_MSC_VER))
+#if defined(__OHOS__) && defined(__arm__)
+    /*
+        鸿蒙Armebai-v7a: AB都为S8时, 存在NEON累加器溢出, 导致运行结果错误
+    */
+    if (!(AIsSigned && BIsSigned) && (BIsSigned || !AIsSigned)) {
+        GemmQuantDispatch = &MlasGemmU8X8DispatchNeon;
+    }
+#else
     if(BIsSigned || !AIsSigned) {
         GemmQuantDispatch = &MlasGemmU8X8DispatchNeon;
     }
+#endif
 #elif defined(MLAS_TARGET_WASM_RELAXED_SIMD)
     if (!AIsSigned) {
         if (HasUSDot()) {
