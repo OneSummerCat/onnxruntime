@@ -186,13 +186,11 @@ bool AreScalarTensorAttributeEqual(const ONNX_NAMESPACE::TensorProto& lhs_t, con
   const void* rhs_value = rhs_t.raw_data().data();
   switch (lhs_t.data_type()) {
     case onnx::TensorProto_DataType_FLOAT:
-      {
 #if defined(__OHOS__) && defined(__arm__)
-        return lhs_t.raw_data() == rhs_t.raw_data();
+      return lhs_t.raw_data() == rhs_t.raw_data();
 #else
-        return *reinterpret_cast<const float*>(lhs_value) == *reinterpret_cast<const float*>(rhs_value);
+      return *reinterpret_cast<const float*>(lhs_value) == *reinterpret_cast<const float*>(rhs_value);
 #endif
-      }
     case onnx::TensorProto_DataType_FLOAT16:
       return *reinterpret_cast<const MLFloat16*>(lhs_value) == *reinterpret_cast<const MLFloat16*>(rhs_value);
     case onnx::TensorProto_DataType_INT64:
@@ -248,15 +246,13 @@ std::size_t GetTensorAttributeHash(const ONNX_NAMESPACE::TensorProto& attr_t) {
     int data_type = attr_t.data_type();
     switch (data_type) {
       case onnx::TensorProto_DataType_FLOAT:
-        {
-          UpdateHash(data_type, hash);
+        UpdateHash(data_type, hash);
 #if defined(__OHOS__) && defined(__arm__)
-          UpdateHash(attr_t.raw_data(), hash);
+        UpdateHash(attr_t.raw_data(), hash);
 #else
-          UpdateHash(*reinterpret_cast<const float*>(attr_t.raw_data().data()), hash);
+        UpdateHash(*reinterpret_cast<const float*>(attr_t.raw_data().data()), hash);
 #endif
-          break;
-        }
+        break;
       case onnx::TensorProto_DataType_FLOAT16:
         UpdateHash(data_type, hash);
         UpdateHash(static_cast<float>(*reinterpret_cast<const MLFloat16*>(attr_t.raw_data().data())), hash);

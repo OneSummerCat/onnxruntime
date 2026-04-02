@@ -885,7 +885,8 @@ MlasGemmQuantGetDispatch(
 #elif defined(MLAS_TARGET_ARM64EC) || (defined(MLAS_TARGET_ARM) && !defined(_MSC_VER))
 #if defined(__OHOS__) && defined(__arm__)
     /*
-        鸿蒙Armebai-v7a: AB都为S8时, 存在NEON累加器溢出, 导致运行结果错误
+        OpenHarmony ARMv7a: When both A and B are S8,
+        NEON accumulator overflow occurs, leading to incorrect results.
     */
     if (!(AIsSigned && BIsSigned) && (BIsSigned || !AIsSigned)) {
         GemmQuantDispatch = &MlasGemmU8X8DispatchNeon;

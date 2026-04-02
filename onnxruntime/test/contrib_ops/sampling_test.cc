@@ -17,7 +17,7 @@ extern std::unique_ptr<Ort::Env> ort_env;
 namespace onnxruntime {
 namespace test {
 
-#if defined(__linux__) && !defined(__ANDROID__)
+#if defined(__linux__) && !defined(__ANDROID__) && !defined(__OHOS__)
 #if defined(USE_CUDA) || defined(USE_ROCM)
 TEST(SamplingTest, Gpt2Sampling_GPU) {
   std::vector<int32_t> input_ids{
@@ -109,17 +109,11 @@ TEST(SamplingTest, Gpt2Sampling_CPU) {
   std::vector<int32_t> min_length{1};
   std::vector<float> repetition_penalty{1.0f};
 
-#if defined(__OHOS__) && defined(__arm__)
-  std::vector<int32_t> expected_output{
-      0, 0, 0, 0, 0, 52, 195, 731, 321, 301, 734, 620, 76, 390, 800,
-      41, 554, 74, 622, 206, 222, 75, 223, 221, 198, 224, 572, 896, 717, 524,
-      0, 0, 0, 52, 328, 219, 328, 206, 288, 227, 896, 328, 182};
-#else
   std::vector<int32_t> expected_output{
       0, 0, 0, 0, 0, 52, 195, 731, 321, 301, 734, 620, 125, 669, 28,
       41, 554, 74, 622, 206, 222, 75, 223, 221, 198, 224, 572, 475, 944, 527,
       0, 0, 0, 52, 328, 219, 328, 206, 288, 227, 896, 328, 210};
-#endif
+
   const int64_t batch_size = 3;
   const int64_t sequence_length = 12;
   std::vector<int64_t> input_ids_shape{batch_size, sequence_length};

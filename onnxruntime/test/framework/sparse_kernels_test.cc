@@ -1073,7 +1073,11 @@ static void RawSparseDataChecker(gsl::span<const T> expected_values,
                                  const SparseTensorProto& actual) {
   const int64_t actual_size = ActualSize(actual);
 #if defined(__OHOS__) && defined(__arm__)
-  // 鸿蒙armv7a: 必须拷贝,保证内存对齐
+  /*
+   On OpenHarmony for ARMv7a, the returned address may not be properly aligned.
+   ARMv7a requires aligned memory access; unaligned access triggers a SIGBUS (signal 7) crash.
+   Therefore, we must copy the data to an aligned buffer.
+  */
   auto raw_data = std::make_unique<T[]>(actual_size);
   memcpy(raw_data.get(), actual.values().raw_data().data(), sizeof(T) * actual_size);
   auto actual_span = gsl::make_span<const T>(raw_data.get(), actual_size);
@@ -1177,117 +1181,126 @@ static Status TestDenseToSparseConversion(size_t indices_start,
 }
 
 TEST(SparseTensorConversionTests, TestDenseToSparseConversion) {
-   // This one will test indices that are less than max int8 value
-   // which should result in int8 indices
-   ASSERT_STATUS_OK(TestDenseToSparseConversion<float>(
-       20U,
-       [](const std::vector<float>& values, TensorProto& tp) {
-         tp.set_data_type(TensorProto_DataType_FLOAT);
-         tp.set_name("dense_float");
-         tp.mutable_float_data()->Add(values.cbegin(), values.cend());
-       },
-       RawSparseDataChecker<float>));
+  // This one will test indices that are less than max int8 value
+  // which should result in int8 indices
+  ASSERT_STATUS_OK(TestDenseToSparseConversion<float>(
+      20U,
+      [](const std::vector<float>& values, TensorProto& tp) {
+        tp.set_data_type(TensorProto_DataType_FLOAT);
+        tp.set_name("dense_float");
+        tp.mutable_float_data()->Add(values.cbegin(), values.cend());
+      },
+      RawSparseDataChecker<float>));
+
   // This one will test indices that are max(int8) < ind < max(int16) value
-   // which should result in int16 indices
-   ASSERT_STATUS_OK(TestDenseToSparseConversion<double>(
-       static_cast<size_t>(std::numeric_limits<int8_t>::max()) + 20U,
-       [](const std::vector<double>& values, TensorProto& tp) {
-         tp.set_data_type(TensorProto_DataType_DOUBLE);
-         tp.set_name("dense_double");
-         tp.mutable_double_data()->Add(values.cbegin(), values.cend());
-       },
-       RawSparseDataChecker<double>));
-   // This one will test indices that are max(int16) < ind < max(int32) value
-   // which should result in int32 indices
-   ASSERT_STATUS_OK(TestDenseToSparseConversion<BFloat16>(
-       static_cast<size_t>(std::numeric_limits<int16_t>::max()) + 20U,
-       [](const std::vector<BFloat16>& values, TensorProto& tp) {
-         tp.set_data_type(TensorProto_DataType_BFLOAT16);
-         tp.set_name("dense_bfloat16");
-         for (auto v : values) {
-           tp.mutable_int32_data()->Add(v.val);
-         }
-       },
-       RawSparseDataChecker<BFloat16>));
-   // Protobuf can not hold anything more than 2Gb and it overflows. Can't test 64-bit indices
-   // on conversion unless explicitly created.
-   // which should result in int32 indices
-   ASSERT_STATUS_OK(TestDenseToSparseConversion<MLFloat16>(
-       20U,
-       [](const std::vector<MLFloat16>& values, TensorProto& tp) {
-         tp.set_data_type(TensorProto_DataType_FLOAT16);
-         tp.set_name("dense_float16");
-         for (auto v : values) {
-           tp.mutable_int32_data()->Add(v.val);
-         }
-       },
-       RawSparseDataChecker<MLFloat16>));
-   ASSERT_STATUS_OK(TestDenseToSparseConversion<int16_t>(
-       20U,
-       [](const std::vector<int16_t>& values, TensorProto& tp) {
-         tp.set_name("dense_int16");
-         tp.set_data_type(TensorProto_DataType_INT16);
-         tp.mutable_int32_data()->Add(values.cbegin(), values.cend());
-       },
-       RawSparseDataChecker<int16_t>));
-   ASSERT_STATUS_OK(TestDenseToSparseConversion<uint16_t>(
-       20U,
-       [](const std::vector<uint16_t>& values, TensorProto& tp) {
-         tp.set_name("dense_uint16");
-         tp.set_data_type(TensorProto_DataType_UINT16);
-         tp.mutable_int32_data()->Add(values.cbegin(), values.cend());
-       },
-       RawSparseDataChecker<uint16_t>));
+  // which should result in int16 indices
+  ASSERT_STATUS_OK(TestDenseToSparseConversion<double>(
+      static_cast<size_t>(std::numeric_limits<int8_t>::max()) + 20U,
+      [](const std::vector<double>& values, TensorProto& tp) {
+        tp.set_data_type(TensorProto_DataType_DOUBLE);
+        tp.set_name("dense_double");
+        tp.mutable_double_data()->Add(values.cbegin(), values.cend());
+      },
+      RawSparseDataChecker<double>));
 
-   ASSERT_STATUS_OK(TestDenseToSparseConversion<int32_t>(
-       20U,
-       [](const std::vector<int32_t>& values, TensorProto& tp) {
-         tp.set_name("dense_int32");
-         tp.set_data_type(TensorProto_DataType_INT32);
-         tp.mutable_int32_data()->Add(values.cbegin(), values.cend());
-       },
-       RawSparseDataChecker<int32_t>));
+  // This one will test indices that are max(int16) < ind < max(int32) value
+  // which should result in int32 indices
+  ASSERT_STATUS_OK(TestDenseToSparseConversion<BFloat16>(
+      static_cast<size_t>(std::numeric_limits<int16_t>::max()) + 20U,
+      [](const std::vector<BFloat16>& values, TensorProto& tp) {
+        tp.set_data_type(TensorProto_DataType_BFLOAT16);
+        tp.set_name("dense_bfloat16");
+        for (auto v : values) {
+          tp.mutable_int32_data()->Add(v.val);
+        }
+      },
+      RawSparseDataChecker<BFloat16>));
 
-   ASSERT_STATUS_OK(TestDenseToSparseConversion<uint32_t>(
-       20U,
-       [](const std::vector<uint32_t>& values, TensorProto& tp) {
-         tp.set_name("dense_uint32");
-         tp.set_data_type(TensorProto_DataType_UINT32);
-         tp.mutable_uint64_data()->Add(values.cbegin(), values.cend());
-       },
-       RawSparseDataChecker<uint32_t>));
-   ASSERT_STATUS_OK(TestDenseToSparseConversion<int64_t>(
-       20U,
-       [](const std::vector<int64_t>& values, TensorProto& tp) {
-         tp.set_name("dense_int64");
-         tp.set_data_type(TensorProto_DataType_INT64);
-         tp.mutable_int64_data()->Add(values.cbegin(), values.cend());
-       },
-       RawSparseDataChecker<int64_t>));
-   ASSERT_STATUS_OK(TestDenseToSparseConversion<uint64_t>(
-       20U,
-       [](const std::vector<uint64_t>& values, TensorProto& tp) {
-         tp.set_name("dense_uint64");
-         tp.set_data_type(TensorProto_DataType_UINT64);
-         tp.mutable_uint64_data()->Add(values.cbegin(), values.cend());
-       },
-       RawSparseDataChecker<uint64_t>));
-   ASSERT_STATUS_OK(TestDenseToSparseConversion<int8_t>(
-       20U,
-       [](const std::vector<int8_t>& values, TensorProto& tp) {
-         tp.set_name("dense_int8");
-         tp.set_data_type(TensorProto_DataType_INT8);
-         tp.mutable_int32_data()->Add(values.cbegin(), values.cend());
-       },
-       RawSparseDataChecker<int8_t>));
-   ASSERT_STATUS_OK(TestDenseToSparseConversion<uint8_t>(
-       20U,
-       [](const std::vector<uint8_t>& values, TensorProto& tp) {
-         tp.set_name("dense_int64");
-         RawDataWriter(values, tp, TensorProto_DataType_UINT8);
-       },
-       RawSparseDataChecker<uint8_t>));
- }
+  // Protobuf can not hold anything more than 2Gb and it overflows. Can't test 64-bit indices
+  // on conversion unless explicitly created.
+  // which should result in int32 indices
+  ASSERT_STATUS_OK(TestDenseToSparseConversion<MLFloat16>(
+      20U,
+      [](const std::vector<MLFloat16>& values, TensorProto& tp) {
+        tp.set_data_type(TensorProto_DataType_FLOAT16);
+        tp.set_name("dense_float16");
+        for (auto v : values) {
+          tp.mutable_int32_data()->Add(v.val);
+        }
+      },
+      RawSparseDataChecker<MLFloat16>));
+
+  ASSERT_STATUS_OK(TestDenseToSparseConversion<int16_t>(
+      20U,
+      [](const std::vector<int16_t>& values, TensorProto& tp) {
+        tp.set_name("dense_int16");
+        tp.set_data_type(TensorProto_DataType_INT16);
+        tp.mutable_int32_data()->Add(values.cbegin(), values.cend());
+      },
+      RawSparseDataChecker<int16_t>));
+
+  ASSERT_STATUS_OK(TestDenseToSparseConversion<uint16_t>(
+      20U,
+      [](const std::vector<uint16_t>& values, TensorProto& tp) {
+        tp.set_name("dense_uint16");
+        tp.set_data_type(TensorProto_DataType_UINT16);
+        tp.mutable_int32_data()->Add(values.cbegin(), values.cend());
+      },
+      RawSparseDataChecker<uint16_t>));
+
+  ASSERT_STATUS_OK(TestDenseToSparseConversion<int32_t>(
+      20U,
+      [](const std::vector<int32_t>& values, TensorProto& tp) {
+        tp.set_name("dense_int32");
+        tp.set_data_type(TensorProto_DataType_INT32);
+        tp.mutable_int32_data()->Add(values.cbegin(), values.cend());
+      },
+      RawSparseDataChecker<int32_t>));
+
+  ASSERT_STATUS_OK(TestDenseToSparseConversion<uint32_t>(
+      20U,
+      [](const std::vector<uint32_t>& values, TensorProto& tp) {
+        tp.set_name("dense_uint32");
+        tp.set_data_type(TensorProto_DataType_UINT32);
+        tp.mutable_uint64_data()->Add(values.cbegin(), values.cend());
+      },
+      RawSparseDataChecker<uint32_t>));
+
+  ASSERT_STATUS_OK(TestDenseToSparseConversion<int64_t>(
+      20U,
+      [](const std::vector<int64_t>& values, TensorProto& tp) {
+        tp.set_name("dense_int64");
+        tp.set_data_type(TensorProto_DataType_INT64);
+        tp.mutable_int64_data()->Add(values.cbegin(), values.cend());
+      },
+      RawSparseDataChecker<int64_t>));
+
+  ASSERT_STATUS_OK(TestDenseToSparseConversion<uint64_t>(
+      20U,
+      [](const std::vector<uint64_t>& values, TensorProto& tp) {
+        tp.set_name("dense_uint64");
+        tp.set_data_type(TensorProto_DataType_UINT64);
+        tp.mutable_uint64_data()->Add(values.cbegin(), values.cend());
+      },
+      RawSparseDataChecker<uint64_t>));
+
+  ASSERT_STATUS_OK(TestDenseToSparseConversion<int8_t>(
+      20U,
+      [](const std::vector<int8_t>& values, TensorProto& tp) {
+        tp.set_name("dense_int8");
+        tp.set_data_type(TensorProto_DataType_INT8);
+        tp.mutable_int32_data()->Add(values.cbegin(), values.cend());
+      },
+      RawSparseDataChecker<int8_t>));
+
+  ASSERT_STATUS_OK(TestDenseToSparseConversion<uint8_t>(
+      20U,
+      [](const std::vector<uint8_t>& values, TensorProto& tp) {
+        tp.set_name("dense_int64");
+        RawDataWriter(values, tp, TensorProto_DataType_UINT8);
+      },
+      RawSparseDataChecker<uint8_t>));
+}
 
 TEST(SparseTensorConversionTests, CsrConversion) {
   auto* cpu_provider = TestCPUExecutionProvider();
