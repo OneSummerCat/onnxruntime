@@ -1073,7 +1073,11 @@ static void RawSparseDataChecker(gsl::span<const T> expected_values,
                                  const SparseTensorProto& actual) {
   const int64_t actual_size = ActualSize(actual);
 #if defined(__OHOS__) && defined(__arm__)
-  // 鸿蒙armv7a: 必须拷贝,保证内存对齐
+  /*
+   On OpenHarmony for ARMv7a, the returned address may not be properly aligned.
+   ARMv7a requires aligned memory access; unaligned access triggers a SIGBUS (signal 7) crash.
+   Therefore, we must copy the data to an aligned buffer.
+  */
   auto raw_data = std::make_unique<T[]>(actual_size);
   memcpy(raw_data.get(), actual.values().raw_data().data(), sizeof(T) * actual_size);
   auto actual_span = gsl::make_span<const T>(raw_data.get(), actual_size);

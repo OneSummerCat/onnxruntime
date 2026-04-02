@@ -349,7 +349,6 @@ MlasQLinearAddKernelHelper(
         if (N & 2) {
 #if defined(__OHOS__) && defined(__arm__)
             if (reinterpret_cast<uintptr_t>(OutputC) % 4 == 0) {
-                // 对齐情况：使用原来的NEON指令
                 vst1_lane_u16_ex((uint16_t*)OutputC, SUI::vreinterpret_u16_i8(i8x8), 0, 8);
             } else {
                 uint16_t temp_value;
